@@ -28,4 +28,62 @@ def get_mixed_color(c1, c2):
         ("검정", "하양"): "차콜그레이", ("하양", "검정"): "라이트그레이", ("회색", "베이지"): "그레이지"
     }
 
-    if (c1, c
+    if (c1, c2) in mix_map:
+        return mix_map[(c1, c2)]
+
+    if c2 == "하양": return f"파스텔 {c1}"
+    if c2 == "검정": return f"다크 {c1}"
+    if c2 == "베이지": return f"소프트 {c1}"
+    if c2 == "은색": return f"메탈릭 {c1}"
+    if c2 == "금색": return f"웜(Warm) {c1}"
+    if c2 == "갈색": return f"빈티지 {c1}"
+    if c2 == "네이비": return f"딥(Deep) {c1}"
+    if c2 == "하늘": return f"쿨(Cool) {c1}"
+    if c2 == "분홍": return f"로지(Rosy) {c1}"
+    if c2 == "연두": return f"프레시 {c1}"
+
+    return f"혼합된 {c1}"
+
+def evaluate_combo(c1, c2):
+    score = "🔴 하" if (c1, c2) in bad_combos else "🟢 상"
+    mixed_color = get_mixed_color(c1, c2)
+    return score, mixed_color
+
+# ==========================================
+# 4. Streamlit 화면 구성
+# ==========================================
+
+st.set_page_config(page_title="색깔 조합 가이드", page_icon="🎨")
+st.title("🎨 색깔 조합 가이드 시스템")
+st.write("두 가지 색상을 선택하고 조합해보세요!")
+
+if "history" not in st.session_state:
+    st.session_state.history = []
+
+col1, col2, col3 = st.columns([2, 2, 1])
+
+with col1:
+    c1 = st.selectbox("리스트 1:", color_list_1, index=color_list_1.index("빨강"))
+
+with col2:
+    c2 = st.selectbox("리스트 2:", color_list_2, index=color_list_2.index("하늘"))
+
+with col3:
+    st.write("") 
+    st.write("")
+    combine_clicked = st.button("✨ 조합하기", use_container_width=True)
+
+if combine_clicked:
+    score, mixed_color = evaluate_combo(c1, c2)
+    
+    st.session_state.history.insert(0, {
+        "선택 색상 1": c1,
+        "선택 색상 2": c2,
+        "결과 색상": mixed_color,
+        "맑음 수치": score
+    })
+
+if st.session_state.history:
+    st.markdown("### 📊 조합 결과")
+    df = pd.DataFrame(st.session_state.history)
+    st.dataframe(df, use_container_width=True, hide_index=True)
